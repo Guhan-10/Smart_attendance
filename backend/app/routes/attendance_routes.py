@@ -9,7 +9,10 @@ from app.services.report_service import generate_consolidated_report, get_daily_
 
 router = APIRouter()
 
-TEMP_DIR = r"C:\Users\tobim\Music\projects\smart_attendance\backend\data\temp"
+BASE_DIR = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))))
+TEMP_DIR = os.path.join(BASE_DIR, "data", "temp")
+
 os.makedirs(TEMP_DIR, exist_ok=True)
 
 

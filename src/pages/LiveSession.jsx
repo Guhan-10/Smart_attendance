@@ -1,23 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Card, Button } from '../components/UI'; 
-import { Camera, StopCircle, RefreshCw, CheckCircle, HelpCircle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Card } from '../components/UI'; 
+import { Camera, StopCircle, RefreshCw, CheckCircle, HelpCircle, Users, GraduationCap } from 'lucide-react';
 
 export const LiveSession = () => {
     const location = useLocation();
-    const navigate = useNavigate();
     const classInfo = location.state?.classInfo || { dept: 'CSE', year: 'Second Year', section: 'B', subject: 'Unknown Subject' };
+    const facultyName = classInfo.faculty_name || JSON.parse(localStorage.getItem("syncedu_user"))?.name || "Faculty";
 
     const totalStrength = 63;
+    
     const [presentCount, setPresentCount] = useState(0);
-    const [isScanning, setIsScanning] = useState(false);
     const [presentList, setPresentList] = useState([]);
+    const [isScanning, setIsScanning] = useState(false);
 
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
-    // 1. Turn on the Webcam
+    // 1. Setup Camera AND Reset Stats
     useEffect(() => {
+        setPresentCount(0);
+        setPresentList([]);
+        setIsScanning(false);
+
         const startCamera = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -26,7 +31,6 @@ export const LiveSession = () => {
                 }
             } catch (err) {
                 console.error("Error accessing webcam:", err);
-                alert("Please allow camera permissions in your browser.");
             }
         };
         startCamera();
@@ -38,11 +42,17 @@ export const LiveSession = () => {
         };
     }, []);
 
-    // 2. The UPDATED AI Scanning Loop for Multiple Faces
+    // 2. The AI Scanning Loop (Silent 2-Minute Auto-Stop)
     useEffect(() => {
-        let interval;
+        let intervalId;
+        let timeoutId;
+
         if (isScanning) {
-            interval = setInterval(async () => {
+            timeoutId = setTimeout(() => {
+                setIsScanning(false); 
+            }, 120000);
+
+            intervalId = setInterval(async () => {
                 if (videoRef.current && canvasRef.current) {
                     const video = videoRef.current;
                     const canvas = canvasRef.current;
@@ -56,7 +66,6 @@ export const LiveSession = () => {
                         formData.append("file", blob, "frame.jpg");
 
                         try {
-                            // Ensure this matches your local Python server!
                             const BACKEND_URL = "http://localhost:8000/attendance/mark";
                             
                             const response = await fetch(BACKEND_URL, {
@@ -66,34 +75,22 @@ export const LiveSession = () => {
                             
                             const data = await response.json();
 
-                            // THIS IS THE NEW PART: Loop through the array of names!
                             if (data.status === "success" && data.student_names) {
-                                
                                 setPresentList(prevList => {
-                                    const newList = [...prevList];
-                                    let newlyAddedCount = 0;
+                                    const newUniqueNames = data.student_names.filter(name => 
+                                        !prevList.some(student => student.name.toLowerCase() === name.toLowerCase())
+                                    );
 
-                                    // Check every name Python found
-                                    data.student_names.forEach(recognizedName => {
-                                        // Does this person already exist in our UI list?
-                                        const alreadyExists = newList.some(student => student.name === recognizedName);
-                                        
-                                        if (!alreadyExists) {
-                                            // Add them to the top!
-                                            newList.unshift({
-                                                roll: new Date().toLocaleTimeString(), 
-                                                name: recognizedName
-                                            });
-                                            newlyAddedCount++;
-                                        }
-                                    });
+                                    if (newUniqueNames.length === 0) return prevList;
 
-                                    // Update the counter
-                                    if (newlyAddedCount > 0) {
-                                        setPresentCount(prevCount => prevCount + newlyAddedCount);
-                                    }
+                                    const newEntries = newUniqueNames.map(name => ({
+                                        roll: new Date().toLocaleTimeString(),
+                                        name: name
+                                    }));
 
-                                    return newList;
+                                    const updatedList = [...newEntries, ...prevList];
+                                    setPresentCount(updatedList.length);
+                                    return updatedList;
                                 });
                             }
                         } catch (error) {
@@ -104,105 +101,131 @@ export const LiveSession = () => {
             }, 2500); 
         }
         
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
+        };
     }, [isScanning]);
 
 
     const handleEndSession = () => {
         setIsScanning(false);
-        alert(`Session Ended. Total Present: ${presentCount} / ${totalStrength}. Attendance securely saved to database.`);
-        navigate('/faculty');
     };
 
     return (
         <div className="flex flex-col gap-6 animate-fade-in relative min-h-[80vh]">
             
-            <div className={`p-4 rounded-lg flex items-center justify-center gap-2 font-bold text-white shadow-md transition-colors ${isScanning ? 'bg-danger animate-pulse' : 'bg-primary'}`}>
-                {isScanning ? <Camera size={20} /> : <StopCircle size={20} />}
-                {isScanning ? 'LIVE SCANNING ONGOING' : 'SESSION PAUSED - START CAMERA SCAN'}
+            {/* Header Status Bar */}
+            <div className={`p-3 rounded-xl flex items-center justify-center gap-3 font-bold text-white shadow-lg transition-all duration-500 ${isScanning ? 'bg-rose-500 animate-pulse' : 'bg-slate-800'}`}>
+                {isScanning ? <Camera size={22} /> : <StopCircle size={22} />}
+                <span className="tracking-wide">{isScanning ? 'LIVE SCANNING IN PROGRESS' : 'SESSION PAUSED - WAITING TO START'}</span>
             </div>
 
-            <div className="flex justify-between items-center mb-2">
+            {/* Class Info & Counter */}
+            <div className="flex justify-between items-end mb-4 px-2">
                 <div>
-                    <h2 className="text-xl font-bold text-primary">{classInfo.subject} - {classInfo.dept} {classInfo.section}</h2>
-                    <p className="text-sm text-muted">{classInfo.year} • Live Attendance Mode</p>
+                    <h2 className="text-3xl font-black text-slate-800 tracking-tight">{classInfo.subject}</h2>
+                    
+                    <div className="flex items-center gap-4 mt-2">
+                        <p className="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-sm border border-indigo-100 w-fit">
+                            <GraduationCap size={16}/> Prof. {facultyName}
+                        </p>
+                        <p className="text-sm font-semibold text-slate-500 flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg w-fit">
+                            <Users size={16}/> {classInfo.dept} {classInfo.section} • {classInfo.year}
+                        </p>
+                    </div>
                 </div>
 
-                <div className="flex flex-col items-end">
-                    <span className="text-sm font-bold text-muted uppercase tracking-wider">Attendance Counter</span>
-                    <div className="text-3xl font-bold text-primary flex items-center gap-2">
-                        <span className={isScanning ? 'text-success' : ''}>{presentCount}</span>
-                        <span className="text-muted text-xl">/ {totalStrength}</span>
+                <div className="flex flex-col items-end bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-200">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Live Attendance</span>
+                    <div className="text-4xl font-black flex items-baseline gap-1">
+                        <span className={isScanning ? 'text-emerald-500 animate-pulse' : 'text-slate-700'}>{presentCount}</span>
+                        <span className="text-slate-300 text-2xl">/ {totalStrength}</span>
                     </div>
                 </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-6 h-full">
+            {/* Main Content Grid */}
+            <div className="grid lg:grid-cols-2 gap-8 h-[550px]">
 
-                <Card className="flex flex-col h-[500px] p-0 overflow-hidden relative border-2 border-primary-light border-dashed">
-                    <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center z-0">
-                        <canvas ref={canvasRef} style={{ display: 'none' }} />
-                        <video 
-                            ref={videoRef} 
-                            autoPlay 
-                            playsInline 
-                            muted
-                            className="w-full h-full object-cover transform scale-x-[-1]" 
-                        />
+                {/* Left: Sleek Video Player Container */}
+                <div className="relative flex flex-col w-full h-full bg-black rounded-3xl overflow-hidden shadow-2xl ring-1 ring-slate-900/10">
+                    <canvas ref={canvasRef} style={{ display: 'none' }} />
+                    <video 
+                        ref={videoRef} 
+                        autoPlay 
+                        playsInline 
+                        muted
+                        className="absolute inset-0 w-full h-full object-cover transform scale-x-[-1] opacity-90" 
+                    />
 
-                        {isScanning && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <div className="relative w-64 h-64 border-2 border-success border-dashed rounded-lg animate-pulse flex items-center justify-center">
-                                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-success rounded-tl"></div>
-                                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-success rounded-tr"></div>
-                                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-success rounded-bl"></div>
-                                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-success rounded-br"></div>
-                                    <span className="absolute bottom-[-30px] text-sm font-bold text-success bg-black/50 px-3 py-1 rounded backdrop-blur-sm">
-                                        ANALYZING FACES...
-                                    </span>
-                                </div>
+                    {/* AI Scanning Overlay */}
+                    {isScanning && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-emerald-900/10 transition-all">
+                            <div className="relative w-72 h-72 border border-emerald-400/50 rounded-2xl animate-pulse flex items-center justify-center">
+                                <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-emerald-400 rounded-tl-2xl"></div>
+                                <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-emerald-400 rounded-tr-2xl"></div>
+                                <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-emerald-400 rounded-bl-2xl"></div>
+                                <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-emerald-400 rounded-br-2xl"></div>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
-                    <div className="mt-auto absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-4 flex justify-between z-10 border-t border-white/10">
-                        <Button
-                            variant={isScanning ? 'warning' : 'success'}
-                            className={`flex items-center gap-2 font-bold ${isScanning ? 'bg-warning hover:bg-yellow-600' : 'bg-success hover:bg-green-600'} text-white border-0`}
+                    {/* Premium Media Control Bar (Bottom) */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-32 pb-8 px-8 flex justify-between items-center z-20">
+                        
+                        <button
+                            className={`px-8 py-3.5 rounded-2xl font-bold flex items-center gap-3 transition-all duration-300 ease-out transform hover:-translate-y-1 border ${
+                                isScanning 
+                                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_8px_30px_rgb(245,158,11,0.4)] border-amber-400/50 hover:from-amber-400 hover:to-orange-400' 
+                                : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[0_8px_30px_rgb(16,185,129,0.4)] border-emerald-400/50 hover:from-emerald-400 hover:to-teal-400'
+                            }`}
                             onClick={() => setIsScanning(!isScanning)}
                         >
-                            {isScanning ? <StopCircle size={18} /> : <Camera size={18} />}
-                            {isScanning ? 'Pause Scan' : 'Start Camera Scan'}
-                        </Button>
+                            {isScanning ? <StopCircle size={22} className="animate-pulse" /> : <Camera size={22} />}
+                            <span className="tracking-wide">{isScanning ? 'PAUSE AI SCAN' : 'START AI SCAN'}</span>
+                        </button>
 
-                        <Button variant="danger" className="font-bold flex items-center gap-2 border-0" onClick={handleEndSession}>
-                            <StopCircle size={18} /> End Session
-                        </Button>
+                        <button 
+                            className="px-8 py-3.5 rounded-2xl font-bold flex items-center gap-3 bg-slate-800/80 backdrop-blur-md text-white border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.5)] transition-all duration-300 ease-out transform hover:-translate-y-1 hover:bg-rose-500 hover:border-rose-400 hover:shadow-[0_8px_30px_rgb(225,29,72,0.4)] group" 
+                            onClick={handleEndSession}
+                        >
+                            <StopCircle size={22} className="text-rose-400 group-hover:text-white transition-colors" /> 
+                            <span className="tracking-wide">END SESSION</span>
+                        </button>
                     </div>
-                </Card>
+                </div>
 
-                <Card className="flex flex-col h-[500px] border-t-4 border-t-primary shadow-lg overflow-hidden p-0">
-                    <div className="bg-slate-100 p-4 border-b flex justify-between items-center">
-                        <h3 className="font-bold text-muted uppercase tracking-wider text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-success" /> Live Present List
+                {/* Right: Modern List Panel */}
+                <Card className="flex flex-col h-full shadow-2xl border-0 ring-1 ring-slate-100 rounded-3xl overflow-hidden p-0 bg-white">
+                    <div className="bg-slate-50 px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                        <h3 className="font-extrabold text-slate-700 uppercase tracking-widest text-sm flex items-center gap-2">
+                            <CheckCircle size={18} className="text-emerald-500" /> Live Detection Log
                         </h3>
-                        {isScanning && <RefreshCw size={14} className="animate-spin text-primary" />}
+                        {isScanning && <RefreshCw size={18} className="animate-spin text-indigo-500" />}
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 bg-slate-50 relative">
+                    <div className="flex-1 overflow-y-auto p-6 relative bg-slate-50/50">
                         {presentList.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full text-muted opacity-50 absolute inset-0">
-                                <HelpCircle size={48} className="mb-2" />
-                                <p>Awaiting face matches...</p>
+                            <div className="flex flex-col items-center justify-center h-full text-slate-400 absolute inset-0">
+                                <div className="bg-slate-100 p-4 rounded-full mb-4">
+                                    <Camera size={32} className="text-slate-300" />
+                                </div>
+                                <p className="font-medium">Waiting for faces in frame...</p>
                             </div>
                         ) : (
-                            <ul className="flex flex-col gap-2">
+                            <ul className="flex flex-col gap-3">
                                 {presentList.map((student, idx) => (
-                                    <li key={idx} className="flex justify-between items-center bg-white p-3 rounded shadow-sm border-l-2 border-l-success animate-fade-in relative overflow-hidden">
-                                        <div className="absolute inset-y-0 left-0 w-full bg-success/5 transform -translate-x-full animate-[slideRight_1s_ease-out_forwards]"></div>
-                                        <span className="font-bold text-primary z-10">{student.name}</span>
-                                        <span className="font-semibold text-muted z-10 text-sm">Logged at: {student.roll}</span>
-                                        <span className="badge badge-success px-2 py-0.5 text-xs z-10 shadow-sm"><CheckCircle size={12} /> Present</span>
+                                    <li key={idx} className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500 animate-fade-in transition-all hover:shadow-md">
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-slate-800 text-lg">{student.name}</span>
+                                            <span className="font-medium text-slate-400 text-xs flex items-center gap-1 mt-0.5">
+                                                Detected at {student.roll}
+                                            </span>
+                                        </div>
+                                        <span className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                                            <CheckCircle size={14} /> Present
+                                        </span>
                                     </li>
                                 ))}
                             </ul>
@@ -212,12 +235,6 @@ export const LiveSession = () => {
 
             </div>
 
-            <style dangerouslySetInnerHTML={{
-                __html: `
-        @keyframes slideRight {
-          to { transform: translateX(0); }
-        }
-      `}} />
         </div>
     );
 };
