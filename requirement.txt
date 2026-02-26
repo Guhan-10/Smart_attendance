@@ -1,0 +1,15 @@
+# Web Framework & Server
+fastapi==0.110.0
+uvicorn==0.27.1
+python-multipart==0.0.9
+
+# Database Connections
+pymongo==4.6.2
+certifi==2024.2.2
+
+# AI & Computer Vision
+deepface==0.0.86
+opencv-python==4.9.0.80
+tensorflow==2.15.0
+tf-keras==2.15.0
+retina-face==0.0.14
