@@ -29,6 +29,10 @@ async def register_user(data: SignupRequest):
 async def login_user(data: LoginRequest):
     """Verifies credentials against MongoDB."""
     user = users_collection.find_one({
+<<<<<<< HEAD
+=======
+        "role": data.role,
+>>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
         "identifier": data.identifier,
         "password": data.password
     })
