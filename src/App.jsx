@@ -42,7 +42,6 @@ function App() {
     { label: 'My Classes', path: '/faculty', icon: Presentation },
   ];
 
-<<<<<<< HEAD
   // Helper to get current user data
   const getUserData = () => {
     const sessionStr = localStorage.getItem("syncedu_user");
@@ -51,8 +50,6 @@ function App() {
 
   const currentUser = getUserData();
 
-=======
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
   return (
     <BrowserRouter>
       <Routes>
@@ -64,13 +61,8 @@ function App() {
         <Route path="/student" element={
           <DashboardLayout
             menuItems={studentMenu}
-<<<<<<< HEAD
             userName={currentUser.name}
             subText={currentUser.identifier}
-=======
-            userName="Harisanth K"
-            subText="24CSR097 • B.E CSE"
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
             role="STUDENT"
           />
         }>
@@ -84,13 +76,8 @@ function App() {
         <Route path="/advisor" element={
           <DashboardLayout
             menuItems={advisorMenu}
-<<<<<<< HEAD
             userName={currentUser.name}
             subText={currentUser.identifier}
-=======
-            userName="Dr. Mahesh R"
-            subText="Assoc. Prof • CSE A (2nd Yr)"
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
             role="ADVISOR"
           />
         }>
@@ -102,23 +89,12 @@ function App() {
         <Route path="/faculty" element={
           <DashboardLayout
             menuItems={facultyMenu}
-<<<<<<< HEAD
             userName={currentUser.name}
             subText={currentUser.identifier}
-=======
-            userName="Prof. Vignesh T"
-            subText="Asst. Prof • IT Dept"
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
             role="FACULTY"
           />
         }>
           <Route index element={<FacultyDashboard />} />
-<<<<<<< HEAD
-=======
-          {/* Note: In a real app we might hide the sidebar for live sessions, 
-              but for this prototype keeping the layout is fine, or we can use a full screen layout.
-              We'll use Dashboard layout for consistency, but you can also drop it outside. */}
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
           <Route path="live" element={<LiveSession />} />
         </Route>
 

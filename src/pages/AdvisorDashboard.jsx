@@ -19,11 +19,7 @@ export const AdvisorDashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 // ⚠️ REPLACE WITH YOUR LAPTOP'S IP
-<<<<<<< HEAD
                 const BACKEND_URL = "http://localhost:8000/advisor/dashboard";
-=======
-                const BACKEND_URL = "http://192.168.X.X:8000/advisor/dashboard";
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
                 const response = await fetch(BACKEND_URL);
                 const data = await response.json();
 

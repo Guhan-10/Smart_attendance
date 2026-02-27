@@ -29,10 +29,6 @@ async def register_user(data: SignupRequest):
 async def login_user(data: LoginRequest):
     """Verifies credentials against MongoDB."""
     user = users_collection.find_one({
-<<<<<<< HEAD
-=======
-        "role": data.role,
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
         "identifier": data.identifier,
         "password": data.password
     })
@@ -41,9 +37,17 @@ async def login_user(data: LoginRequest):
         raise HTTPException(
             status_code=401, detail="Invalid credentials. Please try again.")
 
+    # Inside your login route after verifying the password:
     return {
         "status": "success",
-        "name": user["name"],
-        "role": user["role"],
-        "identifier": user["identifier"]
+        "message": "Login successful",
+        "user": {
+            "id": str(user["_id"]),
+            "name": user["name"],
+            "role": user["role"],
+            "email": user.get("email", ""),
+            "roll_number": user.get("roll_number", ""),
+            # <--- Must be included!
+            "department": user.get("department", "")
+        }
     }
