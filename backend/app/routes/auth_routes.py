@@ -37,9 +37,17 @@ async def login_user(data: LoginRequest):
         raise HTTPException(
             status_code=401, detail="Invalid credentials. Please try again.")
 
+    # Inside your login route after verifying the password:
     return {
         "status": "success",
-        "name": user["name"],
-        "role": user["role"],
-        "identifier": user["identifier"]
+        "message": "Login successful",
+        "user": {
+            "id": str(user["_id"]),
+            "name": user["name"],
+            "role": user["role"],
+            "email": user.get("email", ""),
+            "roll_number": user.get("roll_number", ""),
+            # <--- Must be included!
+            "department": user.get("department", "")
+        }
     }

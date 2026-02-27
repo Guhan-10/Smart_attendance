@@ -28,17 +28,24 @@ export const Login = () => {
             const data = await response.json();
 
             if (response.ok) {
+<<<<<<< HEAD
                 // Save user session temporarily or permanently based on role
+=======
+                // Save user session — backend returns data inside data.user
+                const u = data.user;
+>>>>>>> 61ad04db10468a7ccf49b735d94d9feec7d4465d
                 const userSession = {
-                    name: data.name,
-                    role: data.role,
-                    identifier: data.identifier
+                    name: u.name,
+                    role: u.role,
+                    identifier: identifier,
+                    email: u.email,
+                    department: u.department
                 };
 
-                if (data.role === 'student') {
+                if (u.role === 'student') {
                     localStorage.setItem("syncedu_user", JSON.stringify(userSession));
                     navigate('/student');
-                } else if (data.role === 'faculty' || data.role === 'advisor') {
+                } else if (u.role === 'faculty' || u.role === 'advisor') {
                     // Show the intermediate step
                     setUserData(userSession);
                 }

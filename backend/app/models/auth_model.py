@@ -13,4 +13,8 @@ class SignupRequest(BaseModel):
     role: str
     identifier: str
     password: str
-    profileData: Optional[dict] = {}  # <--- Added this line
+    email: Optional[str] = None
+    department: Optional[str] = None
+    section: Optional[str] = None
+    advisorYear: Optional[str] = None
+    profileData: Optional[dict] = {}  # Extra profile info
