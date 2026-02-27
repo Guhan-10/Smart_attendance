@@ -15,15 +15,18 @@ export const Signup = () => {
     const [department, setDepartment] = useState('CSE');
     const [dob, setDob] = useState('');
     const [mobile, setMobile] = useState('');
-    
+
     // Student specific states
     const [programme, setProgramme] = useState('');
     const [parentMobile, setParentMobile] = useState('');
     const [parentEmail, setParentEmail] = useState('');
-    
+
     // Faculty/Advisor specific states
     const [designation, setDesignation] = useState('');
-    const [advisorClass, setAdvisorClass] = useState('');
+
+    // Advisor specific states
+    const [section, setSection] = useState('A');
+    const [advisorYear, setAdvisorYear] = useState('1st Year');
 
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -54,13 +57,16 @@ export const Signup = () => {
             role,
             identifier,
             password,
-            // Include extra data in the database just in case we need it later
+            email,
+            department,
+            // Advisor-specific top-level fields
+            ...(role === 'advisor' && { section, advisorYear }),
+            // Include extra profile data in the database for later use
             profileData: {
-                department,
                 dob,
                 mobile,
                 ...(role === 'student' && { rollNumber, programme, parentMobile, parentEmail, year: detectedYear }),
-                ...(role !== 'student' && { designation, advisorClass })
+                ...(role !== 'student' && { designation })
             }
         };
 
@@ -142,7 +148,13 @@ export const Signup = () => {
                             <Select label="Department" options={departments} value={department} onChange={e => setDepartment(e.target.value)} required />
                             <Input label="Designation" value={designation} onChange={e => setDesignation(e.target.value)} required />
                             <Input label="Date of Birth" type="date" value={dob} onChange={e => setDob(e.target.value)} required />
-                            <Input label={role === 'advisor' ? 'Advisor of Which Class' : 'Advisor of (Optional)'} placeholder="e.g. CSE A 2nd Year" value={advisorClass} onChange={e => setAdvisorClass(e.target.value)} required={role === 'advisor'} />
+                            <Input label="Mobile Number" type="tel" value={mobile} onChange={e => setMobile(e.target.value)} required />
+                            {role === 'advisor' && (
+                                <>
+                                    <Select label="Section" options={['A', 'B', 'C']} value={section} onChange={e => setSection(e.target.value)} required />
+                                    <Select label="Year" options={['1st Year', '2nd Year', '3rd Year', '4th Year']} value={advisorYear} onChange={e => setAdvisorYear(e.target.value)} required />
+                                </>
+                            )}
                             <div className="md:col-span-2">
                                 <Input label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
                             </div>

@@ -4,8 +4,8 @@ import { Avatar } from '../components/UI';
 
 export const Topbar = () => {
     // 1. Create a state to hold whoever is currently logged in
-    const [userProfile, setUserProfile] = useState({ 
-        name: 'Loading...', 
+    const [userProfile, setUserProfile] = useState({
+        name: 'Loading...',
         role: 'student',
         email: '',
         roll_number: ''
@@ -27,18 +27,18 @@ export const Topbar = () => {
 
     // 4. Figure out their exact role from the database
     const currentRole = userProfile.role ? userProfile.role.toLowerCase() : "student";
-    
+
     // 5. Check if they are any type of staff member (Faculty or Advisor)
     const isStaff = ["faculty", "teacher", "advisor"].includes(currentRole);
-    
+
     // 6. Set the specific badge text
     let displayRole = "STUDENT";
     if (currentRole === "advisor") displayRole = "ADVISOR";
     else if (isStaff) displayRole = "FACULTY";
-    
+
     // 7. Subtext: Show Dept for staff, or Email/Roll Number for students
-    const subText = isStaff 
-        ? `${displayRole.charAt(0) + displayRole.slice(1).toLowerCase()} • IT Dept` 
+    const subText = isStaff
+        ? `${displayRole.charAt(0) + displayRole.slice(1).toLowerCase()} • ${userProfile.department || 'Dept'}`
         : (userProfile.email || userProfile.roll_number || "Student");
 
     return (
@@ -47,7 +47,7 @@ export const Topbar = () => {
             <div className="text-lg font-bold text-primary">KONGU ENGINEERING COLLEGE</div>
 
             <div className="user-profile flex items-center">
-                
+
                 {/* Dynamic Role Badge */}
                 <div className={`badge mr-4 ${isStaff ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-100 text-blue-700'} px-3 py-1 rounded-full text-xs font-bold`}>
                     {displayRole}
@@ -60,7 +60,7 @@ export const Topbar = () => {
                 <div className="flex items-center gap-3 ml-4">
                     {/* We pass the dynamic initials to your Avatar component */}
                     <Avatar initials={getInitials(userProfile.name)} />
-                    
+
                     <div className="user-info flex flex-col">
                         <span className="user-name font-bold text-slate-800 text-sm leading-tight">
                             {userProfile.name}
