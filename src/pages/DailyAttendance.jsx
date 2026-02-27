@@ -5,11 +5,6 @@ import { Search, Info } from 'lucide-react';
 export const DailyAttendance = () => {
     const [dates, setDates] = useState([]);
     const [studentName, setStudentName] = useState("Guhan"); // Default student to search
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
     // Default dates
     const today = new Date().toISOString().split('T')[0];
     const pastMonth = new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0];
@@ -21,7 +16,6 @@ export const DailyAttendance = () => {
     const fetchDailyData = async () => {
         if (!studentName) return alert("Please enter a student name");
         setIsLoading(true);
-<<<<<<< HEAD
 
         try {
             // ⚠️ REPLACE WITH YOUR LAPTOP'S IP
@@ -29,15 +23,6 @@ export const DailyAttendance = () => {
             const response = await fetch(BACKEND_URL);
             const data = await response.json();
 
-=======
-        
-        try {
-            // ⚠️ REPLACE WITH YOUR LAPTOP'S IP
-            const BACKEND_URL = `http://192.168.X.X:8000/attendance/daily?student_name=${studentName}&start_date=${startDate}&end_date=${endDate}`;
-            const response = await fetch(BACKEND_URL);
-            const data = await response.json();
-            
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
             if (response.ok) {
                 setDates(data.data);
             } else {
@@ -61,7 +46,6 @@ export const DailyAttendance = () => {
 
             {/* Filters */}
             <Card className="flex flex-col md:flex-row gap-4 items-end">
-<<<<<<< HEAD
                 <Input
                     label="Student First Name"
                     value={studentName}
@@ -82,28 +66,6 @@ export const DailyAttendance = () => {
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     className="flex-1 w-full"
-=======
-                <Input 
-                    label="Student First Name" 
-                    value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
-                    className="flex-1 w-full" 
-                    placeholder="e.g. Harisanth"
-                />
-                <Input 
-                    label="From Date" 
-                    type="date" 
-                    value={startDate} 
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="flex-1 w-full" 
-                />
-                <Input 
-                    label="To Date" 
-                    type="date" 
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)} 
-                    className="flex-1 w-full" 
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
                 />
                 <div className="flex gap-2">
                     <Button variant="secondary" onClick={() => { setStartDate(pastMonth); setEndDate(today); }}>Reset</Button>
@@ -150,18 +112,10 @@ export const DailyAttendance = () => {
                                     ) : (
                                         row.hours.map((status, hIdx) => (
                                             <td key={hIdx} className="font-bold text-center">
-<<<<<<< HEAD
                                                 <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full shadow-sm text-sm ${status === 'P' ? 'text-green-700 bg-green-100' :
                                                         status === 'A' ? 'text-red-700 bg-red-100' :
                                                             'text-yellow-700 bg-yellow-100'
                                                     }`}>
-=======
-                                                <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full shadow-sm text-sm ${
-                                                    status === 'P' ? 'text-green-700 bg-green-100' :
-                                                    status === 'A' ? 'text-red-700 bg-red-100' :
-                                                    'text-yellow-700 bg-yellow-100'
-                                                }`}>
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
                                                     {status}
                                                 </span>
                                             </td>

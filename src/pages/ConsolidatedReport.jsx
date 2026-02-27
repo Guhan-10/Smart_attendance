@@ -4,19 +4,11 @@ import { Download, Search, Printer, Info } from 'lucide-react';
 
 export const ConsolidatedReport = () => {
     const [tableData, setTableData] = useState([]);
-<<<<<<< HEAD
 
     // Default dates (e.g., first day of current month to today)
     const today = new Date().toISOString().split('T')[0];
     const firstDay = new Date(new Date().setDate(1)).toISOString().split('T')[0];
 
-=======
-    
-    // Default dates (e.g., first day of current month to today)
-    const today = new Date().toISOString().split('T')[0];
-    const firstDay = new Date(new Date().setDate(1)).toISOString().split('T')[0];
-    
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
     const [startDate, setStartDate] = useState(firstDay);
     const [endDate, setEndDate] = useState(today);
     const [isLoading, setIsLoading] = useState(false);
@@ -25,17 +17,10 @@ export const ConsolidatedReport = () => {
         setIsLoading(true);
         try {
             // ⚠️ REPLACE WITH YOUR LAPTOP'S IP
-<<<<<<< HEAD
             const BACKEND_URL = `http://localhost:8000/attendance/report?start_date=${startDate}&end_date=${endDate}`;
             const response = await fetch(BACKEND_URL);
             const data = await response.json();
 
-=======
-            const BACKEND_URL = `http://192.168.X.X:8000/attendance/report?start_date=${startDate}&end_date=${endDate}`;
-            const response = await fetch(BACKEND_URL);
-            const data = await response.json();
-            
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
             if (response.ok) {
                 setTableData(data.data);
             }
@@ -54,13 +39,8 @@ export const ConsolidatedReport = () => {
     // Calculate totals dynamically
     const totalConducted = tableData.length > 0 ? tableData[0].conducted : 0;
     const totalAttended = tableData.reduce((acc, curr) => acc + curr.attended, 0);
-<<<<<<< HEAD
     const overallPercentage = totalConducted > 0
         ? ((totalAttended / (totalConducted * tableData.length)) * 100).toFixed(2)
-=======
-    const overallPercentage = totalConducted > 0 
-        ? ((totalAttended / (totalConducted * tableData.length)) * 100).toFixed(2) 
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
         : 0;
 
     return (
@@ -71,7 +51,6 @@ export const ConsolidatedReport = () => {
 
             <Card className="flex flex-col md:flex-row gap-4 items-end">
                 <Select label="Term" options={['S1', 'S2', 'S3', 'S4']} className="flex-1 w-full" defaultValue="S1" />
-<<<<<<< HEAD
                 <Input
                     label="Start Date"
                     type="date"
@@ -85,21 +64,6 @@ export const ConsolidatedReport = () => {
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     className="flex-1 w-full"
-=======
-                <Input 
-                    label="Start Date" 
-                    type="date" 
-                    value={startDate} 
-                    onChange={(e) => setStartDate(e.target.value)} 
-                    className="flex-1 w-full" 
-                />
-                <Input 
-                    label="End Date" 
-                    type="date" 
-                    value={endDate} 
-                    onChange={(e) => setEndDate(e.target.value)} 
-                    className="flex-1 w-full" 
->>>>>>> 707c1a61a0b75343c5a72cbc6d763196a4964721
                 />
 
                 <div className="flex gap-2">
