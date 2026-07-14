@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LayoutDashboard, Calendar, FileText, Settings, Users, CheckSquare, Presentation } from 'lucide-react';
 
 // Auth Pages
@@ -51,7 +51,7 @@ function App() {
   const currentUser = getUserData();
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Login />} />
@@ -100,7 +100,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
