@@ -28,12 +28,8 @@ export const Login = () => {
             const data = await response.json();
 
             if (response.ok) {
-<<<<<<< HEAD
-                // Save user session temporarily or permanently based on role
-=======
                 // Save user session — backend returns data inside data.user
                 const u = data.user;
->>>>>>> 61ad04db10468a7ccf49b735d94d9feec7d4465d
                 const userSession = {
                     name: u.name,
                     role: u.role,
